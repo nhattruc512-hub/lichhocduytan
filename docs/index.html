@@ -1,0 +1,85 @@
+<!doctype html>
+<html lang="vi">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="theme-color" content="#0f3d91" />
+  <title>DTU Class Finder</title>
+  <meta name="description" content="Công cụ hỗ trợ sinh viên Duy Tân tra cứu lớp học phần trước khi đăng ký tín chỉ." />
+  <style>
+    :root{--brand:#0f3d91;--brand2:#1956c9;--ink:#172033;--muted:#65708a;--line:#dfe5ef;--bg:#f4f7fb;--card:#fff;--green:#0d8a62}
+    *{box-sizing:border-box}body{margin:0;font-family:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;color:var(--ink);background:linear-gradient(180deg,#eef4ff 0,#f8fbff 34%,var(--bg) 100%)}
+    a{color:inherit}.wrap{width:min(1080px,calc(100% - 32px));margin:auto}.hero{padding:64px 0 28px}.badge{display:inline-flex;gap:8px;align-items:center;padding:7px 11px;border:1px solid #c8d7f7;border-radius:999px;background:#fff;color:var(--brand);font-size:13px;font-weight:700}.dot{width:8px;height:8px;border-radius:50%;background:var(--green)}
+    h1{margin:18px 0 12px;font-size:clamp(34px,7vw,64px);line-height:1.02;letter-spacing:-.045em;max-width:820px}.lead{max-width:720px;color:var(--muted);font-size:18px;line-height:1.7}.card{background:rgba(255,255,255,.94);border:1px solid var(--line);border-radius:24px;box-shadow:0 18px 60px rgba(38,66,120,.08)}
+    .search{margin-top:30px;padding:18px;display:grid;grid-template-columns:1fr auto;gap:10px}.search input{min-width:0;height:54px;border:1px solid #cfd8e8;border-radius:14px;padding:0 16px;font-size:17px;outline:none}.search input:focus{border-color:#7da1ed;box-shadow:0 0 0 4px rgba(25,86,201,.09)}.search button{height:54px;border:0;border-radius:14px;padding:0 22px;background:var(--brand);color:#fff;font-weight:800;font-size:15px;cursor:pointer}.search button:hover{background:var(--brand2)}
+    .hint{grid-column:1/-1;margin:0 4px;color:var(--muted);font-size:13px}.grid{display:grid;grid-template-columns:1.2fr .8fr;gap:18px;padding:22px 0 52px}.panel{padding:24px}.panel h2{margin:0 0 10px;font-size:20px}.panel p,.panel li{color:var(--muted);line-height:1.65}.steps{padding-left:20px}.cta{display:inline-flex;align-items:center;justify-content:center;min-height:44px;padding:0 16px;margin-top:8px;border-radius:12px;text-decoration:none;background:#eef4ff;color:var(--brand);font-weight:800;border:1px solid #cfdbf5}.notice{margin-top:14px;padding:13px 14px;border-radius:12px;background:#fff8e8;border:1px solid #f0dfb3;color:#725510;font-size:13px;line-height:1.55}.footer{padding:24px 0 44px;color:#7a8499;font-size:13px}.result{display:none;margin-top:14px;padding:14px;border-radius:12px;background:#eef8f4;border:1px solid #caeadf;color:#155b46;line-height:1.55}
+    @media(max-width:760px){.hero{padding-top:40px}.grid{grid-template-columns:1fr}.search{grid-template-columns:1fr}.search button{width:100%}}
+  </style>
+</head>
+<body>
+  <main class="wrap">
+    <section class="hero">
+      <span class="badge"><span class="dot"></span> DTU Class Finder · GitHub Pages</span>
+      <h1>Tra cứu lớp học phần nhanh hơn trước giờ đăng ký.</h1>
+      <p class="lead">Nhập mã môn như <b>CS 211</b> hoặc <b>CMU-CS 246</b>. Trang sẽ đưa bạn đến nguồn tra cứu công khai của Đại học Duy Tân để kiểm tra lớp, lịch, giảng viên và tình trạng đăng ký.</p>
+      <form class="card search" id="searchForm">
+        <input id="courseCode" autocomplete="off" placeholder="Ví dụ: CS 211" aria-label="Mã môn" />
+        <button type="submit">Tra cứu DTU</button>
+        <p class="hint">Không cần đăng nhập MyDTU. Không nhập mật khẩu sinh viên vào trang này.</p>
+        <div class="result" id="result"></div>
+      </form>
+    </section>
+
+    <section class="grid">
+      <article class="card panel">
+        <h2>Cách dùng</h2>
+        <ol class="steps">
+          <li>Nhập mã môn cần tìm.</li>
+          <li>Bấm <b>Tra cứu DTU</b>; mã môn sẽ được sao chép để bạn dán vào ô tìm kiếm của DTU.</li>
+          <li>Trên trang DTU, chọn đúng năm học/học kỳ rồi kiểm tra lớp còn chỗ, lịch, phòng và giảng viên.</li>
+          <li>Đăng ký chính thức vẫn thực hiện trên MyDTU.</li>
+        </ol>
+        <div class="notice">DTU Class Finder là công cụ cộng đồng, không phải website chính thức của Đại học Duy Tân. Dữ liệu có thể thay đổi theo thời gian thực; hãy kiểm tra lại trên hệ thống trường trước khi đăng ký.</div>
+      </article>
+
+      <aside class="card panel">
+        <h2>Nguồn chính thức</h2>
+        <p>Trang tra cứu môn học công khai của DTU là nguồn dữ liệu tham khảo cho website này.</p>
+        <a class="cta" id="openDtu" target="_blank" rel="noreferrer" href="https://courses.duytan.edu.vn/Sites/Home_ChuongTrinhDaoTao.aspx?p=home_coursesearch&timespan=93">Mở Courses DTU ↗</a>
+        <p style="margin-top:18px">Source code và bản Next.js đầy đủ:</p>
+        <a class="cta" href="https://github.com/nhattruc512-hub/lichhocduytan">GitHub repository ↗</a>
+      </aside>
+    </section>
+  </main>
+
+  <footer class="wrap footer">DTU Class Finder · Dữ liệu tham khảo từ courses.duytan.edu.vn</footer>
+
+  <script>
+    const form = document.getElementById('searchForm');
+    const input = document.getElementById('courseCode');
+    const result = document.getElementById('result');
+    const dtuUrl = 'https://courses.duytan.edu.vn/Sites/Home_ChuongTrinhDaoTao.aspx?p=home_coursesearch&timespan=93';
+
+    function normalize(value){
+      const compact = value.toUpperCase().replace(/\s+/g,' ').trim();
+      const match = compact.match(/^([A-Z][A-Z-]*)\s*(\d+[A-Z]?)$/);
+      return match ? `${match[1]} ${match[2]}` : compact;
+    }
+
+    form.addEventListener('submit', async (event) => {
+      event.preventDefault();
+      const code = normalize(input.value);
+      if (!code || code.length < 2) {
+        result.style.display = 'block';
+        result.textContent = 'Hãy nhập mã môn, ví dụ CS 211.';
+        return;
+      }
+      input.value = code;
+      try { await navigator.clipboard.writeText(code); } catch {}
+      result.style.display = 'block';
+      result.innerHTML = `Đã chuẩn bị mã <b>${code.replace(/[<>]/g,'')}</b>. Trang DTU đang được mở; dán mã này vào ô tìm kiếm môn học.`;
+      window.open(dtuUrl, '_blank', 'noopener,noreferrer');
+    });
+  </script>
+</body>
+</html>

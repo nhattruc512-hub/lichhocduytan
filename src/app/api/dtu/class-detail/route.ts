@@ -12,9 +12,11 @@ export async function GET(request: NextRequest) {
     const url = normalizeDtuDetailUrl(rawUrl);
     const response = await fetch(url, {
       headers: {
-        "User-Agent": "lichhocduytan/0.1 (+public course lookup helper)"
+        "User-Agent": "lichhocduytan/0.3 (+public course lookup helper)",
+        Accept: "text/html,application/xhtml+xml"
       },
-      next: { revalidate: 60 }
+      next: { revalidate: 60 },
+      signal: AbortSignal.timeout(12_000)
     });
 
     if (!response.ok) {
@@ -30,6 +32,10 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ data: courseClass });
   } catch (error) {
     const message = error instanceof Error ? error.message : "Không thể đọc dữ liệu DTU.";
-    return NextResponse.json({ error: message }, { status: 400 });
+    const isTimeout = error instanceof Error && error.name === "TimeoutError";
+    return NextResponse.json(
+      { error: isTimeout ? "Nguồn DTU phản hồi quá chậm. Vui lòng thử lại." : message },
+      { status: isTimeout ? 504 : 400 }
+    );
   }
 }

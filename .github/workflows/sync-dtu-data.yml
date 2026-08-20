@@ -1,0 +1,49 @@
+name: Sync DTU open classes
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - "scripts/sync-dtu-data.mjs"
+      - ".github/workflows/sync-dtu-data.yml"
+  schedule:
+    - cron: "17 * * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: sync-dtu-data
+  cancel-in-progress: false
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          ref: main
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Sync public DTU data
+        run: node scripts/sync-dtu-data.mjs
+
+      - name: Commit refreshed dataset
+        run: |
+          if git diff --quiet -- data/classes.json; then
+            echo "No dataset changes"
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add data/classes.json
+          git commit -m "data: refresh DTU open classes"
+          git push origin main

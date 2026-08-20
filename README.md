@@ -1,41 +1,68 @@
 # DTU Class Finder
 
-MVP hỗ trợ sinh viên Duy Tân tra cứu lớp học phần, xem số chỗ còn trống và kiểm tra trùng lịch trước khi đăng ký tín chỉ.
+Web cộng đồng hỗ trợ sinh viên Duy Tân tra cứu lớp học phần còn chỗ, xem lịch/phòng/giảng viên và kiểm tra trùng lịch trước khi đăng ký tín chỉ.
 
-> Đây là dự án cộng đồng, **không phải website chính thức của Đại học Duy Tân**. Luôn kiểm tra lại dữ liệu trên hệ thống chính thức trước khi đăng ký.
+> Đây **không phải website chính thức của Đại học Duy Tân**. Dữ liệu được đọc từ các trang tra cứu công khai của DTU và có thể thay đổi. Luôn kiểm tra lại trên hệ thống chính thức trước khi đăng ký.
 
 ## Tính năng hiện có
 
-- Tìm theo mã môn, tên môn, giảng viên hoặc mã đăng ký.
-- Lọc chỉ lớp còn chỗ và lọc theo thứ.
-- Sắp xếp theo số chỗ còn lại.
-- Chọn nhiều lớp để dựng lịch dự kiến.
-- Tự động cảnh báo các lớp bị trùng giờ.
-- Lưu danh sách lớp đã chọn trong `localStorage`.
+- Nhập mã môn như `CS 211` hoặc `CMU-CS 246` để tra cứu dữ liệu thật.
+- Tự xác định năm học và học kỳ từ nguồn công khai DTU.
+- Tự tìm `courseid` của môn, không cần người dùng biết ID nội bộ.
+- Tải toàn bộ lớp học phần của môn trong học kỳ đang tra cứu.
+- Hiển thị mã đăng ký, loại lớp, số chỗ còn lại, lịch học, phòng/cơ sở, giảng viên và trạng thái đăng ký.
+- Lọc chỉ lớp còn chỗ, lọc theo thứ và lọc tiếp theo giảng viên/mã đăng ký.
+- Chọn nhiều lớp để dựng lịch dự kiến và tự động cảnh báo trùng giờ.
+- Lưu các lớp đã chọn trong `localStorage` để không mất lịch khi tải lại trang.
+- Có công cụ nhập trực tiếp URL chi tiết một lớp DTU để đối chiếu.
 - Responsive/mobile-first.
-- API nhập **một trang chi tiết lớp công khai** từ `courses.duytan.edu.vn` và đọc mã lớp, lịch, phòng, giảng viên, sĩ số, số chỗ còn trống.
-- API nhập URL có allowlist hostname để tránh biến endpoint thành SSRF proxy.
 
-## Trạng thái dữ liệu
+## Luồng dữ liệu công khai DTU
 
-Danh sách mặc định trong giao diện là **dữ liệu minh hoạ** để hoàn thiện UX. Không sử dụng các con số demo để đăng ký thật.
+Ứng dụng không đăng nhập MyDTU và không yêu cầu mật khẩu sinh viên.
 
-Tính năng **Nạp một lớp trực tiếp từ DTU** gọi route:
+```text
+LoadNamHoc.aspx
+  ↓
+LoadHocKy.aspx
+  ↓
+CourseResultSearch.aspx
+  ↓
+Mã môn → courseid
+  ↓
+CourseClassResult.aspx
+  ↓
+Danh sách lớp + chỗ trống + lịch + phòng + giảng viên
+```
+
+### API tra cứu theo mã môn
+
+```text
+GET /api/dtu/search?q=CS%20211
+```
+
+Response gồm:
+
+- `data`: danh sách lớp học phần.
+- `courses`: các môn/courseid khớp truy vấn.
+- `semester`: học kỳ và năm học được DTU trả về.
+
+Ứng dụng giới hạn truy vấn theo mã môn và không cho phép người dùng dùng wildcard `*` để tránh vô tình tải toàn bộ danh mục môn từ máy chủ DTU.
+
+### API đọc một trang chi tiết lớp
 
 ```text
 GET /api/dtu/class-detail?url=<URL chi tiết lớp trên courses.duytan.edu.vn>
 ```
 
-Route chỉ chấp nhận HTTPS + hostname `courses.duytan.edu.vn` + trang `p=home_listclassdetail` có `classid`.
-
-Bước tiếp theo là bổ sung collector cho trang danh sách/tìm kiếm lớp công khai để người dùng chỉ cần nhập `CS 211` và nhận toàn bộ lớp thật của học kỳ hiện tại.
+Route chỉ chấp nhận HTTPS + hostname `courses.duytan.edu.vn` + trang `p=home_listclassdetail` có `classid`, nhằm tránh biến endpoint thành proxy tùy ý.
 
 ## Công nghệ
 
 - Next.js 16 App Router
 - React 19
 - TypeScript
-- CSS thuần, không phụ thuộc UI framework
+- CSS thuần
 
 ## Chạy local
 
@@ -57,22 +84,26 @@ npm run build
 ```text
 src/
   app/
-    api/dtu/class-detail/route.ts   # proxy + parser nguồn công khai DTU
+    api/dtu/
+      search/route.ts          # tra mã môn → danh sách lớp thật
+      class-detail/route.ts    # đọc một URL chi tiết lớp
     globals.css
+    live-search.css
     layout.tsx
     page.tsx
   components/
-    class-finder.tsx                # UI tìm kiếm + lọc + lịch dự kiến
+    class-finder.tsx           # tìm kiếm + lọc + lịch dự kiến
   lib/
-    dtu.ts                          # allowlist URL + HTML parser
-    mock-classes.ts                 # dữ liệu demo
+    dtu.ts                     # DTU provider + HTML parser + allowlist
     types.ts
 ```
 
-## Nguyên tắc an toàn
+## Nguyên tắc an toàn và vận hành
 
 - Không yêu cầu hoặc lưu mật khẩu MyDTU.
-- Không tự động đăng ký tín chỉ thay sinh viên.
-- Dùng dữ liệu công khai để hỗ trợ tìm kiếm/so sánh.
-- Cache dữ liệu nguồn ở server để hạn chế request không cần thiết.
+- Không tự động đăng ký/hủy tín chỉ thay sinh viên.
+- Chỉ dùng dữ liệu công khai để hỗ trợ tìm kiếm và so sánh.
+- Cache các endpoint ít thay đổi như năm học/danh mục môn.
+- Cache danh sách lớp trong thời gian ngắn vì số chỗ có thể thay đổi nhanh.
+- Giới hạn số môn khớp được tải trong một truy vấn để giảm tải cho DTU.
 - Luôn dẫn người dùng về MyDTU để thực hiện đăng ký chính thức.

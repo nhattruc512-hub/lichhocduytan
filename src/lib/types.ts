@@ -21,6 +21,6 @@ export type CourseClass = {
   startDate: string;
   endDate: string;
   meetings: Meeting[];
-  source: "demo" | "dtu";
+  source: "dtu";
   sourceUrl?: string;
 };

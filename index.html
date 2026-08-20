@@ -5,62 +5,138 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <meta name="theme-color" content="#0f3d91" />
   <title>DTU Class Finder</title>
-  <meta name="description" content="Công cụ hỗ trợ sinh viên Duy Tân tra cứu lớp học phần trước khi đăng ký tín chỉ." />
+  <meta name="description" content="Tra cứu lớp học phần còn chỗ của Đại học Duy Tân theo tên môn hoặc mã môn." />
   <style>
-    :root{--brand:#0f3d91;--brand2:#1956c9;--ink:#172033;--muted:#65708a;--line:#dfe5ef;--bg:#f4f7fb;--card:#fff;--green:#0d8a62}
-    *{box-sizing:border-box}body{margin:0;font-family:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;color:var(--ink);background:linear-gradient(180deg,#eef4ff 0,#f8fbff 34%,var(--bg) 100%)}
-    a{color:inherit}.wrap{width:min(1080px,calc(100% - 32px));margin:auto}.hero{padding:64px 0 28px}.badge{display:inline-flex;gap:8px;align-items:center;padding:7px 11px;border:1px solid #c8d7f7;border-radius:999px;background:#fff;color:var(--brand);font-size:13px;font-weight:700}.dot{width:8px;height:8px;border-radius:50%;background:var(--green)}
-    h1{margin:18px 0 12px;font-size:clamp(34px,7vw,64px);line-height:1.02;letter-spacing:-.045em;max-width:820px}.lead{max-width:720px;color:var(--muted);font-size:18px;line-height:1.7}.card{background:rgba(255,255,255,.94);border:1px solid var(--line);border-radius:24px;box-shadow:0 18px 60px rgba(38,66,120,.08)}
-    .search{margin-top:30px;padding:18px;display:grid;grid-template-columns:1fr auto;gap:10px}.search input{min-width:0;height:54px;border:1px solid #cfd8e8;border-radius:14px;padding:0 16px;font-size:17px;outline:none}.search input:focus{border-color:#7da1ed;box-shadow:0 0 0 4px rgba(25,86,201,.09)}.search button{height:54px;border:0;border-radius:14px;padding:0 22px;background:var(--brand);color:#fff;font-weight:800;font-size:15px;cursor:pointer}.search button:hover{background:var(--brand2)}
-    .hint{grid-column:1/-1;margin:0 4px;color:var(--muted);font-size:13px}.grid{display:grid;grid-template-columns:1.2fr .8fr;gap:18px;padding:22px 0 52px}.panel{padding:24px}.panel h2{margin:0 0 10px;font-size:20px}.panel p,.panel li{color:var(--muted);line-height:1.65}.steps{padding-left:20px}.cta{display:inline-flex;align-items:center;justify-content:center;min-height:44px;padding:0 16px;margin-top:8px;border-radius:12px;text-decoration:none;background:#eef4ff;color:var(--brand);font-weight:800;border:1px solid #cfdbf5}.notice{margin-top:14px;padding:13px 14px;border-radius:12px;background:#fff8e8;border:1px solid #f0dfb3;color:#725510;font-size:13px;line-height:1.55}.footer{padding:24px 0 44px;color:#7a8499;font-size:13px}.result{display:none;margin-top:14px;padding:14px;border-radius:12px;background:#eef8f4;border:1px solid #caeadf;color:#155b46;line-height:1.55}
-    @media(max-width:760px){.hero{padding-top:40px}.grid{grid-template-columns:1fr}.search{grid-template-columns:1fr}.search button{width:100%}}
+    :root{--brand:#0f3d91;--brand2:#1956c9;--ink:#172033;--muted:#65708a;--line:#dfe5ef;--bg:#f4f7fb;--card:#fff;--green:#0d8a62;--red:#be3049}
+    *{box-sizing:border-box}body{margin:0;font-family:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;color:var(--ink);background:linear-gradient(180deg,#eef4ff 0,#f8fbff 32%,var(--bg) 100%)}
+    a{color:inherit}.wrap{width:min(1180px,calc(100% - 28px));margin:auto}.hero{padding:52px 0 24px}.badge{display:inline-flex;gap:8px;align-items:center;padding:7px 11px;border:1px solid #c8d7f7;border-radius:999px;background:#fff;color:var(--brand);font-size:13px;font-weight:800}.dot{width:8px;height:8px;border-radius:50%;background:var(--green)}
+    h1{margin:18px 0 10px;font-size:clamp(34px,6vw,62px);line-height:1.02;letter-spacing:-.045em;max-width:880px}.lead{max-width:820px;color:var(--muted);font-size:18px;line-height:1.65}.card{background:rgba(255,255,255,.96);border:1px solid var(--line);border-radius:22px;box-shadow:0 18px 60px rgba(38,66,120,.08)}
+    .search{margin-top:26px;padding:16px;display:grid;grid-template-columns:1fr auto;gap:10px}.search input{min-width:0;height:56px;border:1px solid #cfd8e8;border-radius:14px;padding:0 16px;font-size:17px;outline:none}.search input:focus{border-color:#7da1ed;box-shadow:0 0 0 4px rgba(25,86,201,.09)}.search button{height:56px;border:0;border-radius:14px;padding:0 24px;background:var(--brand);color:#fff;font-weight:800;font-size:15px;cursor:pointer}.search button:hover{background:var(--brand2)}
+    .hint{grid-column:1/-1;margin:1px 4px 0;color:var(--muted);font-size:13px}.status{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin:14px 0 0;color:var(--muted);font-size:13px}.status b{color:var(--ink)}
+    .toolbar{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin:18px 0}.toolbar select,.toolbar button{height:40px;border:1px solid var(--line);background:#fff;border-radius:11px;padding:0 12px;color:var(--ink)}.toolbar button{cursor:pointer}.count{margin-left:auto;color:var(--muted);font-size:14px}
+    .results{display:grid;gap:14px;padding-bottom:42px}.class-card{padding:18px}.top{display:flex;justify-content:space-between;gap:18px;align-items:flex-start}.course-code{display:inline-block;color:var(--brand);font-weight:900;font-size:13px;letter-spacing:.04em;text-transform:uppercase}.class-card h2{margin:5px 0 4px;font-size:20px}.sub{color:var(--muted);font-size:14px}.avail{flex:0 0 auto;padding:9px 12px;border-radius:12px;background:#eaf8f2;color:#087153;font-weight:900;white-space:nowrap}.meta{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;margin-top:16px}.meta div{padding:11px;border-radius:12px;background:#f7f9fc}.meta span{display:block;color:var(--muted);font-size:12px;margin-bottom:4px}.meta strong{font-size:14px;line-height:1.35}.schedule{margin-top:12px;padding:12px 14px;border:1px solid var(--line);border-radius:12px;background:#fff}.schedule b{font-size:13px}.schedule p{margin:5px 0 0;color:var(--muted);font-size:14px;line-height:1.5}.actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:13px}.btn{display:inline-flex;align-items:center;justify-content:center;min-height:40px;padding:0 13px;border-radius:10px;text-decoration:none;font-weight:800;font-size:13px;border:1px solid #cfdaf1;background:#eef4ff;color:var(--brand)}.copy{cursor:pointer;border:1px solid var(--line);background:#fff;color:var(--ink)}
+    .empty,.loading,.error{padding:28px;text-align:center;color:var(--muted)}.error{color:var(--red)}.notice{margin:18px 0 40px;padding:14px 16px;border-radius:14px;background:#fff8e8;border:1px solid #f0dfb3;color:#725510;font-size:13px;line-height:1.55}.footer{padding:10px 0 36px;color:#7a8499;font-size:13px}
+    @media(max-width:820px){.meta{grid-template-columns:1fr 1fr}.top{flex-direction:column}.avail{align-self:flex-start}.count{width:100%;margin-left:0}}
+    @media(max-width:600px){.hero{padding-top:34px}.search{grid-template-columns:1fr}.search button{width:100%}.meta{grid-template-columns:1fr}.class-card{padding:15px}}
   </style>
 </head>
 <body>
   <main class="wrap">
     <section class="hero">
-      <span class="badge"><span class="dot"></span> DTU Class Finder · GitHub Pages</span>
-      <h1>Tra cứu lớp học phần nhanh hơn trước giờ đăng ký.</h1>
-      <p class="lead">Nhập mã môn như <b>CS 211</b> hoặc <b>CMU-CS 246</b>. Trang sẽ đưa bạn đến nguồn tra cứu công khai của Đại học Duy Tân để kiểm tra lớp, lịch, giảng viên và tình trạng đăng ký.</p>
+      <span class="badge"><span class="dot"></span> DTU Class Finder · tự đồng bộ dữ liệu</span>
+      <h1>Gõ tên môn. Xem ngay tất cả lớp còn chỗ.</h1>
+      <p class="lead">Tìm bằng <b>tên môn tiếng Việt</b> hoặc <b>mã môn</b>, ví dụ “Lập trình”, “Cơ sở dữ liệu”, “CS 211”. Kết quả hiển thị trực tiếp trên trang: mã đăng ký, số chỗ trống, lịch, phòng, cơ sở và giảng viên.</p>
       <form class="card search" id="searchForm">
-        <input id="courseCode" autocomplete="off" placeholder="Ví dụ: CS 211" aria-label="Mã môn" />
-        <button type="submit">Tra cứu DTU</button>
-        <p class="hint">Không cần đăng nhập MyDTU. Không nhập mật khẩu sinh viên vào trang này.</p>
-        <div class="result" id="result"></div>
+        <input id="query" autocomplete="off" placeholder="Nhập tên môn hoặc mã môn..." aria-label="Tên môn hoặc mã môn" />
+        <button type="submit">Tìm lớp trống</button>
+        <p class="hint">Không cần đăng nhập MyDTU. Dữ liệu được GitHub tự đồng bộ định kỳ từ trang tra cứu công khai DTU.</p>
       </form>
+      <div class="status" id="status">Đang tải dữ liệu...</div>
     </section>
 
-    <section class="grid">
-      <article class="card panel">
-        <h2>Cách dùng</h2>
-        <ol class="steps">
-          <li>Nhập mã môn cần tìm.</li>
-          <li>Bấm <b>Tra cứu DTU</b>; mã môn sẽ được sao chép để bạn dán vào ô tìm kiếm của DTU.</li>
-          <li>Trên trang DTU, chọn đúng năm học/học kỳ rồi kiểm tra lớp còn chỗ, lịch, phòng và giảng viên.</li>
-          <li>Đăng ký chính thức vẫn thực hiện trên MyDTU.</li>
-        </ol>
-        <div class="notice">DTU Class Finder là công cụ cộng đồng, không phải website chính thức của Đại học Duy Tân. Dữ liệu có thể thay đổi theo thời gian thực; hãy kiểm tra lại trên hệ thống trường trước khi đăng ký.</div>
-      </article>
-
-      <aside class="card panel">
-        <h2>Nguồn chính thức</h2>
-        <p>Trang tra cứu môn học công khai của DTU là nguồn dữ liệu tham khảo cho website này.</p>
-        <a class="cta" target="_blank" rel="noreferrer" href="https://courses.duytan.edu.vn/Sites/Home_ChuongTrinhDaoTao.aspx?p=home_coursesearch&timespan=93">Mở Courses DTU ↗</a>
-        <p style="margin-top:18px">Source code và bản Next.js đầy đủ:</p>
-        <a class="cta" href="https://github.com/nhattruc512-hub/lichhocduytan">GitHub repository ↗</a>
-      </aside>
+    <section class="toolbar" id="toolbar" hidden>
+      <select id="dayFilter" aria-label="Lọc theo thứ">
+        <option value="">Tất cả các ngày</option><option>Thứ 2</option><option>Thứ 3</option><option>Thứ 4</option><option>Thứ 5</option><option>Thứ 6</option><option>Thứ 7</option><option>Chủ Nhật</option><option>CN</option>
+      </select>
+      <select id="sort" aria-label="Sắp xếp">
+        <option value="available">Nhiều chỗ nhất</option>
+        <option value="code">Theo mã môn</option>
+        <option value="lecturer">Theo giảng viên</option>
+      </select>
+      <button id="clear" type="button">Xoá tìm kiếm</button>
+      <span class="count" id="count"></span>
     </section>
+
+    <section class="results" id="results"><div class="loading card">Đang tải danh sách lớp còn chỗ…</div></section>
+
+    <div class="notice"><b>Lưu ý:</b> đây là công cụ cộng đồng, không phải website chính thức của Đại học Duy Tân. Số chỗ có thể thay đổi giữa các lần đồng bộ. Trước khi đăng ký, hãy kiểm tra lại trên MyDTU hoặc trang chính thức của trường.</div>
   </main>
-
-  <footer class="wrap footer">DTU Class Finder · Dữ liệu tham khảo từ courses.duytan.edu.vn</footer>
+  <footer class="wrap footer">DTU Class Finder · nguồn dữ liệu: courses.duytan.edu.vn · mã nguồn trên GitHub</footer>
 
   <script>
-    const form = document.getElementById('searchForm');
-    const input = document.getElementById('courseCode');
-    const result = document.getElementById('result');
-    const dtuUrl = 'https://courses.duytan.edu.vn/Sites/Home_ChuongTrinhDaoTao.aspx?p=home_coursesearch&timespan=93';
-    function normalize(value){const compact=value.toUpperCase().replace(/\s+/g,' ').trim();const match=compact.match(/^([A-Z][A-Z-]*)\s*(\d+[A-Z]?)$/);return match?`${match[1]} ${match[2]}`:compact}
-    form.addEventListener('submit', async (event)=>{event.preventDefault();const code=normalize(input.value);if(!code||code.length<2){result.style.display='block';result.textContent='Hãy nhập mã môn, ví dụ CS 211.';return}input.value=code;try{await navigator.clipboard.writeText(code)}catch{}result.style.display='block';result.innerHTML=`Đã chuẩn bị mã <b>${code.replace(/[<>]/g,'')}</b>. Trang DTU đang được mở; dán mã này vào ô tìm kiếm môn học.`;window.open(dtuUrl,'_blank','noopener,noreferrer')});
+    const $ = (id) => document.getElementById(id);
+    const queryInput = $('query');
+    const results = $('results');
+    const status = $('status');
+    const toolbar = $('toolbar');
+    const dayFilter = $('dayFilter');
+    const sort = $('sort');
+    const count = $('count');
+    let dataset = [];
+    let meta = null;
+
+    function normalize(value='') {
+      return value.normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/đ/g,'d').replace(/Đ/g,'D').toLowerCase().replace(/\s+/g,' ').trim();
+    }
+    function safe(value='') { return String(value).replace(/[&<>"']/g, (m) => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m])); }
+    function formatTime(iso){ if(!iso) return 'chưa có dữ liệu'; try{return new Date(iso).toLocaleString('vi-VN')}catch{return iso} }
+
+    async function loadData(){
+      try{
+        const response = await fetch('./data/classes.json?ts=' + Date.now(), {cache:'no-store'});
+        if(!response.ok) throw new Error('HTTP ' + response.status);
+        meta = await response.json();
+        dataset = Array.isArray(meta.classes) ? meta.classes : [];
+        status.innerHTML = `<span class="dot"></span><b>${safe(meta.semester?.semesterLabel || 'Học kỳ hiện tại')}</b> · ${safe(meta.semester?.yearLabel || '')} · ${dataset.length} lớp còn chỗ · cập nhật ${safe(formatTime(meta.generatedAt))}`;
+        render();
+      }catch(error){
+        status.textContent = 'Chưa tải được dữ liệu DTU.';
+        results.innerHTML = `<div class="error card">Dữ liệu đang được GitHub đồng bộ lần đầu. Hãy tải lại trang sau ít phút.</div>`;
+      }
+    }
+
+    function currentRows(){
+      const q = normalize(queryInput.value);
+      let rows = dataset.filter((item) => !q || normalize(`${item.courseCode} ${item.courseName}`).includes(q));
+      if(dayFilter.value) rows = rows.filter((item) => normalize(item.schedule).includes(normalize(dayFilter.value)));
+      if(sort.value === 'available') rows.sort((a,b)=>b.available-a.available || a.courseCode.localeCompare(b.courseCode));
+      if(sort.value === 'code') rows.sort((a,b)=>a.courseCode.localeCompare(b.courseCode));
+      if(sort.value === 'lecturer') rows.sort((a,b)=>a.lecturer.localeCompare(b.lecturer,'vi'));
+      return rows;
+    }
+
+    function render(){
+      const q = normalize(queryInput.value);
+      toolbar.hidden = !q;
+      if(!q){
+        results.innerHTML = `<div class="empty card"><b>Sẵn sàng tra cứu.</b><br>Nhập tên môn hoặc mã môn ở ô phía trên.</div>`;
+        return;
+      }
+      const rows = currentRows();
+      count.textContent = `${rows.length} lớp còn chỗ`;
+      if(!rows.length){
+        results.innerHTML = `<div class="empty card">Không tìm thấy lớp còn chỗ phù hợp với “${safe(queryInput.value)}”. Thử tên ngắn hơn hoặc mã môn.</div>`;
+        return;
+      }
+      results.innerHTML = rows.map((item) => `
+        <article class="class-card card">
+          <div class="top">
+            <div><span class="course-code">${safe(item.courseCode)}</span><h2>${safe(item.courseName)}</h2><div class="sub">${safe(item.className)} · ${safe(item.classType)}</div></div>
+            <div class="avail">${Number(item.available)||0} chỗ trống</div>
+          </div>
+          <div class="meta">
+            <div><span>Mã đăng ký</span><strong>${safe(item.registrationCode)}</strong></div>
+            <div><span>Giảng viên</span><strong>${safe(item.lecturer)}</strong></div>
+            <div><span>Phòng</span><strong>${safe(item.room)}</strong></div>
+            <div><span>Cơ sở</span><strong>${safe(item.location)}</strong></div>
+          </div>
+          <div class="schedule"><b>Lịch học</b><p>${safe(item.schedule)}</p><p>Tuần học: ${safe(item.studyWeeks)}</p></div>
+          <div class="actions">
+            <button class="btn copy" type="button" data-copy="${safe(item.registrationCode)}">Copy mã đăng ký</button>
+            ${item.sourceUrl ? `<a class="btn" target="_blank" rel="noreferrer" href="${safe(item.sourceUrl)}">Xem nguồn DTU ↗</a>` : ''}
+          </div>
+        </article>`).join('');
+    }
+
+    $('searchForm').addEventListener('submit', (e)=>{e.preventDefault();render();});
+    queryInput.addEventListener('input', ()=>{ if(queryInput.value.trim().length >= 2 || !queryInput.value.trim()) render(); });
+    dayFilter.addEventListener('change', render); sort.addEventListener('change', render);
+    $('clear').addEventListener('click', ()=>{queryInput.value='';dayFilter.value='';render();queryInput.focus();});
+    results.addEventListener('click', async (event)=>{
+      const button = event.target.closest('[data-copy]'); if(!button) return;
+      try{await navigator.clipboard.writeText(button.dataset.copy);button.textContent='Đã copy';setTimeout(()=>button.textContent='Copy mã đăng ký',1200)}catch{}
+    });
+    loadData();
   </script>
 </body>
 </html>

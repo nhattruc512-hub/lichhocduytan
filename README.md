@@ -4,18 +4,24 @@ Web cộng đồng hỗ trợ sinh viên Duy Tân tra cứu lớp học phần c
 
 > Đây **không phải website chính thức của Đại học Duy Tân**. Dữ liệu được đọc từ các trang tra cứu công khai của DTU và có thể thay đổi. Luôn kiểm tra lại trên hệ thống chính thức trước khi đăng ký.
 
-## Tính năng hiện có
+## Tính năng
 
 - Nhập mã môn như `CS 211` hoặc `CMU-CS 246` để tra cứu dữ liệu thật.
 - Tự xác định năm học và học kỳ từ nguồn công khai DTU.
 - Tự tìm `courseid` của môn, không cần người dùng biết ID nội bộ.
 - Tải toàn bộ lớp học phần của môn trong học kỳ đang tra cứu.
 - Hiển thị mã đăng ký, loại lớp, số chỗ còn lại, lịch học, phòng/cơ sở, giảng viên và trạng thái đăng ký.
-- Lọc chỉ lớp còn chỗ, lọc theo thứ và lọc tiếp theo giảng viên/mã đăng ký.
-- Chọn nhiều lớp để dựng lịch dự kiến và tự động cảnh báo trùng giờ.
-- Lưu các lớp đã chọn trong `localStorage` để không mất lịch khi tải lại trang.
+- Lọc chỉ lớp còn chỗ, lọc theo thứ và lọc tiếp theo giảng viên/mã đăng ký/tên môn.
+- Sắp xếp theo số chỗ còn lại hoặc mã đăng ký.
+- Chọn nhiều lớp thuộc nhiều môn để dựng lịch dự kiến.
+- Tự động cảnh báo các lớp bị trùng giờ.
+- Giữ lịch đã chọn khi tra môn khác và lưu vào `localStorage`.
+- Sao chép mã đăng ký bằng một nút.
+- Nạp chi tiết một lớp theo yêu cầu để đọc thêm sĩ số từ trang chi tiết DTU.
+- Xuất lịch dự kiến ra CSV.
+- Hiển thị trạng thái kết nối nguồn DTU và học kỳ hiện tại.
 - Có công cụ nhập trực tiếp URL chi tiết một lớp DTU để đối chiếu.
-- Responsive/mobile-first.
+- Responsive/mobile-first, hỗ trợ lịch từ Thứ 2 đến Chủ nhật.
 
 ## Luồng dữ liệu công khai DTU
 
@@ -47,7 +53,7 @@ Response gồm:
 - `courses`: các môn/courseid khớp truy vấn.
 - `semester`: học kỳ và năm học được DTU trả về.
 
-Ứng dụng giới hạn truy vấn theo mã môn và không cho phép người dùng dùng wildcard `*` để tránh vô tình tải toàn bộ danh mục môn từ máy chủ DTU.
+Ứng dụng giới hạn truy vấn theo mã môn và không cho người dùng dùng wildcard `*` để tránh vô tình tải toàn bộ danh mục môn từ máy chủ DTU.
 
 ### API đọc một trang chi tiết lớp
 
@@ -55,7 +61,15 @@ Response gồm:
 GET /api/dtu/class-detail?url=<URL chi tiết lớp trên courses.duytan.edu.vn>
 ```
 
-Route chỉ chấp nhận HTTPS + hostname `courses.duytan.edu.vn` + trang `p=home_listclassdetail` có `classid`, nhằm tránh biến endpoint thành proxy tùy ý.
+Route chỉ chấp nhận HTTPS + hostname `courses.duytan.edu.vn` + trang `p=home_listclassdetail` có `classid`, có timeout khi DTU phản hồi chậm và không hoạt động như proxy tùy ý.
+
+### API kiểm tra nguồn dữ liệu
+
+```text
+GET /api/dtu/health
+```
+
+API trả trạng thái nguồn `courses.duytan.edu.vn`, học kỳ hiện tại, thời điểm kiểm tra và độ trễ. Giao diện dùng endpoint này để phân biệt lỗi nguồn DTU với trường hợp không tìm thấy lớp.
 
 ## Công nghệ
 
@@ -63,6 +77,7 @@ Route chỉ chấp nhận HTTPS + hostname `courses.duytan.edu.vn` + trang `p=ho
 - React 19
 - TypeScript
 - CSS thuần
+- GitHub Actions cho lint + production build
 
 ## Chạy local
 
@@ -73,11 +88,14 @@ npm run dev
 
 Mở `http://localhost:3000`.
 
-Kiểm tra production build:
+Kiểm tra chất lượng trước khi merge:
 
 ```bash
+npm run lint
 npm run build
 ```
+
+GitHub Actions trong `.github/workflows/ci.yml` cũng tự chạy hai bước này khi có thay đổi trên branch.
 
 ## Cấu trúc chính
 
@@ -87,12 +105,13 @@ src/
     api/dtu/
       search/route.ts          # tra mã môn → danh sách lớp thật
       class-detail/route.ts    # đọc một URL chi tiết lớp
+      health/route.ts          # kiểm tra nguồn DTU + học kỳ
     globals.css
     live-search.css
     layout.tsx
     page.tsx
   components/
-    class-finder.tsx           # tìm kiếm + lọc + lịch dự kiến
+    class-finder.tsx           # tra cứu + lọc + lịch dự kiến + export
   lib/
     dtu.ts                     # DTU provider + HTML parser + allowlist
     types.ts
@@ -106,4 +125,11 @@ src/
 - Cache các endpoint ít thay đổi như năm học/danh mục môn.
 - Cache danh sách lớp trong thời gian ngắn vì số chỗ có thể thay đổi nhanh.
 - Giới hạn số môn khớp được tải trong một truy vấn để giảm tải cho DTU.
+- Request đọc chi tiết lớp chỉ cho phép đúng hostname và đường dẫn DTU đã định.
+- Có timeout cho request tới nguồn ngoài để tránh treo API.
+- Thiết lập các security headers cơ bản trong `next.config.ts`.
 - Luôn dẫn người dùng về MyDTU để thực hiện đăng ký chính thức.
+
+## Trạng thái dự án
+
+Bản hiện tại nằm trên branch `feat/mvp-class-finder`. Khi CI xanh và đã kiểm tra dữ liệu thật, branch có thể được merge vào `main` để trở thành bản chính thức của repo.

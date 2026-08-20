@@ -1,6 +1,9 @@
 name: Sync DTU open classes
 
 on:
+  pull_request:
+    branches:
+      - main
   push:
     branches:
       - main
@@ -15,7 +18,7 @@ permissions:
   contents: write
 
 concurrency:
-  group: sync-dtu-data
+  group: sync-dtu-data-${{ github.event_name }}-${{ github.ref }}
   cancel-in-progress: false
 
 jobs:
@@ -26,7 +29,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
         with:
-          ref: main
+          ref: ${{ github.event_name == 'pull_request' && github.head_ref || 'main' }}
 
       - name: Setup Node
         uses: actions/setup-node@v4
@@ -36,7 +39,11 @@ jobs:
       - name: Sync public DTU data
         run: node scripts/sync-dtu-data.mjs
 
+      - name: Show dataset summary
+        run: node -e "const d=require('./data/classes.json'); console.log({semester:d.semester,courseCount:d.courseCount,openClassCount:d.openClassCount})"
+
       - name: Commit refreshed dataset
+        if: github.event_name != 'pull_request'
         run: |
           if git diff --quiet -- data/classes.json; then
             echo "No dataset changes"

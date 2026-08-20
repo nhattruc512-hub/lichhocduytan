@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import "./globals.css";
+import "./live-search.css";
 
 export const metadata: Metadata = {
   title: "DTU Class Finder | Tra cứu lớp học phần",
